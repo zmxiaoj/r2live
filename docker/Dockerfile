@@ -6,11 +6,19 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     python-rosdep \
     python-rosinstall \
     python-vcstools \
+    python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
+#rosdepc and tuna 
+RUN pip3 install rosdepc
+RUN sed -i s:/archive.ubuntu.com:/mirrors.tuna.tsinghua.edu.cn/ubuntu:g /etc/apt/sources.list
+RUN cat /etc/apt/sources.list
+RUN apt-get clean
+RUN apt-get -y update --fix-missing
+
 # bootstrap rosdep
-RUN rosdep init && \
-  rosdep update --rosdistro $ROS_DISTRO
+RUN rosdepc init && \
+  rosdepc update --rosdistro $ROS_DISTRO
 
 # install ros packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -64,3 +72,7 @@ RUN /bin/bash -c '. /opt/ros/melodic/setup.bash; cd ../ && catkin_make'
 
 ADD docker/ros-entrypoint.sh /ros-entrypoint.sh
 ENTRYPOINT [ "/ros-entrypoint.sh" ]
+
+# add datasets
+# ADD ../datasets/degenerate_seq_00.bag ../datasets/indoor_aggressive.bag 
+
